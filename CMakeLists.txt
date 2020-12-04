@@ -58,12 +58,21 @@ set(output_target mainframe.cef)
 add_library(${output_target} ${source_files})
 target_include_directories(${output_target} PUBLIC "code/include")
 target_compile_features(${output_target} PRIVATE cxx_std_17)
-target_link_libraries(${output_target} PRIVATE mainframe.ui freetype-gl ${mf_winlibs} PUBLIC cefdll_wrapper mainframe.utils mainframe.render mainframe.math)
+target_link_libraries(${output_target} PUBLIC
+	mainframe.ui
+	mainframe.utils
+	mainframe.render
+	mainframe.math
+	freetype-gl
+	${mf_winlibs}
+	cefdll_wrapper
+)
+
 set_target_properties(${output_target}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
+	PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
+	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
 )
 
 add_subdirectory("tests")
