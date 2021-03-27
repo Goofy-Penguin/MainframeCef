@@ -16,8 +16,13 @@ namespace mainframe {
 			client = new CefClient();
 		}
 
-		void CefApp::shutdown() {
+		CefApp::~CefApp() {
+			shutdown();
+		}
 
+		void CefApp::shutdown() {
+			client = nullptr;
+			processHandler = nullptr;
 		}
 
 		CefRefPtr<CefClient> CefApp::getClient() {

@@ -14,7 +14,7 @@ namespace mainframe {
 	namespace cef_ {
 		CefClient::CefClient() {
 			//messageHandler.onUIQuery += [this](int browserId, nlohmann::json& jsonData, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback) {
-			//	this->onUIQuery(browserId, jsonData, callback);
+			//	onUIQuery(browserId, jsonData, callback);
 			//};
 
 			renderer = new CefRenderer();
@@ -22,7 +22,7 @@ namespace mainframe {
 
 		CefClient::~CefClient() {
 			std::vector<int> browserIds;
-			for (std::map<int, CefRefPtr<::CefBrowser>>::iterator it = browsers.begin(); it != browsers.end(); ++it) {
+			for (auto it = browsers.begin(); it != browsers.end(); ++it) {
 				browserIds.push_back(it->first);
 			}
 
@@ -35,9 +35,7 @@ namespace mainframe {
 		}
 
 		void CefClient::update() {
-			for (auto& pair : browsers) {
-				// TODO: handle mouse movement
-			}
+
 		}
 
 		CefRefPtr<CefDragData> CefClient::getGlobalDragData() {
@@ -48,7 +46,7 @@ namespace mainframe {
 			return renderer;
 		}
 
-		CefRefPtr<::CefBrowser> CefClient::createBrowser(const std::string& url) {
+		std::pair<CefRefPtr<::CefBrowser>, WebBrowser*>& CefClient::createBrowser(const std::string& url) {
 			CefWindowInfo window_info;
 			window_info.windowless_rendering_enabled = 1;
 
@@ -56,27 +54,32 @@ namespace mainframe {
 			browserSettings.windowless_frame_rate = 30;
 
 			CefRefPtr<::CefBrowser> browser = CefBrowserHost::CreateBrowserSync(window_info, this, url, browserSettings, nullptr, nullptr);
-			if (browser == nullptr) return nullptr;
+			if (browser == nullptr) throw std::runtime_error("error while creating CEF browser object");
 
 			auto browserId = browser->GetIdentifier();
 			renderer->createFrame(browserId);
 
-			return this->browsers[browserId] = browser;
+			browsers[browserId].first = browser;
+			return browsers[browserId];
+		}
+
+		std::pair<CefRefPtr<::CefBrowser>, WebBrowser*>& CefClient::getBrowser(int identifier) {
+			return browsers[identifier];
 		}
 
 		void CefClient::destroyBrowser(int id) {
-			auto& browser = this->browsers[id];
+			auto& browser = browsers[id].first;
 			if (browser == nullptr) return;
 
 			browser->StopLoad();
 			browser->GetHost()->CloseDevTools();
 			browser->GetHost()->CloseBrowser(true);
 
-			this->browsers.erase(id);
+			browsers.erase(id);
 		}
 
 		void CefClient::goBackOrForward(int browserId, bool goBack) {
-			auto& browser = this->browsers[browserId];
+			auto& browser = browsers[browserId].first;
 			if (browser == nullptr) return;
 
 			if (goBack) browser->GoBack();
@@ -84,7 +87,7 @@ namespace mainframe {
 		}
 
 		void CefClient::browserVisibility(int browserId, bool hidden) {
-			auto& browser = this->browsers[browserId];
+			auto& browser = browsers[browserId].first;
 			if (browser == nullptr) return;
 
 			browser->GetHost()->WasHidden(hidden);
@@ -108,7 +111,7 @@ namespace mainframe {
 			CEF_REQUIRE_UI_THREAD();
 
 			/*
-			auto& webb = this->browsers[browser->GetIdentifier()];
+			auto& webb = browsers[browser->GetIdentifier()];
 			if (webb == nullptr) return;
 			if (regions.size() <= 0) return;
 
@@ -127,44 +130,44 @@ namespace mainframe {
 		bool CefClient::OnDragEnter(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefDragData> dragData, DragOperationsMask mask) {
 			CEF_REQUIRE_UI_THREAD();
 
-			this->globalDragData = dragData;
+			globalDragData = dragData;
 			return false;
 		}
 
 		bool CefClient::OnProcessMessageReceived(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message) {
 			CEF_REQUIRE_UI_THREAD();
-			this->onProcessMessage(message);
+			onProcessMessage(message);
 
-			if (this->messageRouter == nullptr) return false;
-			return this->messageRouter->OnProcessMessageReceived(browser, frame, source_process, message);
+			if (messageRouter == nullptr) return false;
+			return messageRouter->OnProcessMessageReceived(browser, frame, source_process, message);
 		}
 
 		void CefClient::OnLoadStart(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefFrame> frame, TransitionType transition_type) {
 			CEF_REQUIRE_UI_THREAD();
 			if (!frame->IsMain()) return;
 
-			this->onLoadingStart();
+			onLoadingStart();
 		}
 
 		void CefClient::OnLoadEnd(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode) {
 			CEF_REQUIRE_UI_THREAD();
 			if (!frame->IsMain()) return;
 
-			this->onLoadingEnd(frame->GetURL(), httpStatusCode);
+			onLoadingEnd(frame->GetURL(), httpStatusCode);
 		}
 
 		void CefClient::OnAfterCreated(CefRefPtr<::CefBrowser> browser) {
 			CEF_REQUIRE_UI_THREAD();
-			if (this->messageRouter != nullptr) return;
+			if (messageRouter != nullptr) return;
 
 			// Create the browser-side router for query handling.
 			CefMessageRouterConfig config;
 			config.js_query_function = "queryUI";
 			config.js_cancel_function = "cancelQueryUI";
-			this->messageRouter = CefMessageRouterBrowserSide::Create(config);
+			messageRouter = CefMessageRouterBrowserSide::Create(config);
 
 			// Register handlers with the router.
-			this->messageRouter->AddHandler(&this->messageHandler, false);
+			messageRouter->AddHandler(&messageHandler, false);
 		}
 
 		void CefClient::OnBeforeClose(CefRefPtr<::CefBrowser> browser) {
@@ -174,15 +177,15 @@ namespace mainframe {
 		void CefClient::OnRenderProcessTerminated(CefRefPtr<::CefBrowser> browser, TerminationStatus status) {
 			CEF_REQUIRE_UI_THREAD();
 
-			if (this->messageRouter == nullptr) return;
-			this->messageRouter->OnRenderProcessTerminated(browser);
+			if (messageRouter == nullptr) return;
+			messageRouter->OnRenderProcessTerminated(browser);
 		}
 
 		bool CefClient::OnBeforeBrowse(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefRequest> request, bool user_gesture, bool is_redirect) {
 			CEF_REQUIRE_UI_THREAD();
-			if (this->messageRouter == nullptr) return false;
+			if (messageRouter == nullptr) return false;
 
-			this->messageRouter->OnBeforeBrowse(browser, frame);
+			messageRouter->OnBeforeBrowse(browser, frame);
 			return false;
 		}
 

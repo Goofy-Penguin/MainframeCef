@@ -1,4 +1,5 @@
 #include <mainframe/cef/cef.h>
+#include <mainframe/cef/cefclient.h>
 
 #include <include/cef_base.h>
 #include <include/cef_app.h>
@@ -13,11 +14,15 @@ namespace mainframe {
 			return c;
 		}
 
+		CefRefPtr<CefClient> CefEngine::client() {
+			return instance().app->getClient();
+		}
+
 		::CefRefPtr<CefApp> CefEngine::getApp() {
 			return app;
 		}
 
-		int CefEngine::init() {
+		bool CefEngine::init() {
 			#ifdef _WIN32
 				CefEnableHighDPISupport();
 			#endif
@@ -41,31 +46,37 @@ namespace mainframe {
 			CefMainArgs main_args;
 			int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
 			if (exit_code >= 0) {
-				return exit_code;
+				return false;
 			}
 
 			bool result = CefInitialize(main_args, settings, app.get(), nullptr);
 			if (!result) {
-				return 1;
+				return false;
 			}
 
 			inited = true;
-			return 0;
+			return true;
 		}
 
 		CefEngine::~CefEngine() {
-			if (!inited) return;
-
-			app->shutdown();
-
-			// ¯\_(-_-)_/¯
-			for (int i = 0; i < 3; i++) CefDoMessageLoopWork();
-			CefShutdown();
+			shutdown();
 		}
 
 		void CefEngine::tick() {
 			CefDoMessageLoopWork();
 			app->update();
+		}
+
+		void CefEngine::shutdown() {
+			if (!inited) return;
+			inited = false;
+
+			app->shutdown();
+			app = nullptr;
+
+			// ¯\_(-_-)_/¯
+			for (int i = 0; i < 3; i++) CefDoMessageLoopWork();
+			CefShutdown();
 		}
 	}
 }

@@ -9,11 +9,18 @@ namespace mainframe {
 			auto& cef = CefEngine::instance();
 			auto client = cef.getApp()->getClient();
 
-			browser = client->createBrowser("about:blank");
+			auto& binding = client->createBrowser("about:blank");
+			binding.second = this;
+
+			browser = binding.first;
 			host = browser->GetHost();
 			host->WasResized();
 
 			frame = client->getRenderer()->getFrame(browser->GetIdentifier());
+		}
+
+		WebBrowser::~WebBrowser() {
+			CefEngine::instance().getApp()->getClient()->destroyBrowser(browser->GetIdentifier());
 		}
 
 		void WebBrowser::setSize(const math::Vector2i& size) {
@@ -44,10 +51,6 @@ namespace mainframe {
 			browser->GetMainFrame()->LoadURL(url);
 		}
 
-		WebBrowser::~WebBrowser() {
-			CefEngine::instance().getApp()->getClient()->destroyBrowser(browser->GetIdentifier());
-		}
-
 		void WebBrowser::setFocused(bool focused_) {
 			Element::setFocused(focused_);
 
@@ -57,7 +60,7 @@ namespace mainframe {
 
 
 		bool WebBrowser::hitTest(const math::Vector2i& mousePos) {
-			return mainframe::ui::Element::hitTest(mousePos) && frame->hitTest(mousePos);
+			return mainframe::ui::Element::hitTest(mousePos) && frame->hitTest(mousePos - getPos());
 		}
 
 		void WebBrowser::mouseDown(const math::Vector2i& mousePos, unsigned int button, mainframe::ui::ModifierKey mods) {
@@ -134,7 +137,7 @@ namespace mainframe {
 			browser->GetHost()->SendMouseMoveEvent(evt, false);
 		}
 
-		void WebBrowser::keyDown(unsigned int key, mainframe::ui::ModifierKey mods, bool repeating) {
+		void WebBrowser::keyDown(unsigned int key, unsigned int scancode, mainframe::ui::ModifierKey mods, bool repeating) {
 			if (key == GLFW_KEY_F2) openDevTools();
 
 			int correctedKey = Helper::convertGlfwKeyToCef(key);
@@ -155,7 +158,7 @@ namespace mainframe {
 			this->browser->GetHost()->SendKeyEvent(evt);
 		}
 
-		void WebBrowser::keyUp(unsigned int key, mainframe::ui::ModifierKey mods) {
+		void WebBrowser::keyUp(unsigned int key, unsigned int scancode, mainframe::ui::ModifierKey mods) {
 			int correctedKey = Helper::convertGlfwKeyToCef(key);
 
 			CefKeyEvent evt;

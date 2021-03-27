@@ -10,9 +10,11 @@ namespace mainframe {
 
 		public:
 			static CefEngine& instance();
+			static CefRefPtr<CefClient> client();
 
-			int init();
+			bool init();
 			void tick();
+			void shutdown();
 
 			::CefRefPtr<CefApp> getApp();
 

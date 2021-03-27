@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mainframe/ui/element.h>
+#include <mainframe/utils/eventnamed.hpp>
 #include <mainframe/cef/cefclient.h>
 #include <mainframe/cef/cefapp.h>
 #include <mainframe/cef/cefrenderframe.h>
@@ -9,6 +10,12 @@
 
 namespace mainframe {
 	namespace cef_ {
+		class WebBrowser;
+		class CefBrowserWrapper : public ::CefBrowser {
+		public:
+			WebBrowser* obj;
+		};
+
 		class WebBrowser : public mainframe::ui::Element {
 			std::shared_ptr<CefRenderFrame> frame;
 			CefRefPtr<::CefBrowser> browser;
@@ -20,6 +27,8 @@ namespace mainframe {
 			mainframe::math::Vector2i lastMousePos;
 
 		public:
+			mainframe::utils::EventNamed<const nlohmann::json&, CefRefPtr<CefMessageRouterBrowserSide::Callback>> onEvent;
+
 			WebBrowser();
 			~WebBrowser();
 			void loadUrl(const std::string& url);
@@ -37,8 +46,8 @@ namespace mainframe {
 			virtual void mouseUp(const math::Vector2i& mousePos, unsigned int button, mainframe::ui::ModifierKey mods) override;
 			virtual void mouseScroll(const math::Vector2i& mousePos, const math::Vector2i& offset) override;
 			virtual void mouseMove(const math::Vector2i& mousePos) override;
-			virtual void keyDown(unsigned int key, mainframe::ui::ModifierKey mods, bool repeating) override;
-			virtual void keyUp(unsigned int key, mainframe::ui::ModifierKey mods) override;
+			virtual void keyDown(unsigned int key, unsigned int scancode, mainframe::ui::ModifierKey mods, bool repeating) override;
+			virtual void keyUp(unsigned int key, unsigned int scancode, mainframe::ui::ModifierKey mods) override;
 			virtual void keyChar(unsigned int key) override;
 		};
 	}

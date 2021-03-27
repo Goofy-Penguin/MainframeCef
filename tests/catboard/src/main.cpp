@@ -21,8 +21,15 @@ public:
 		scene->setWindow(window);
 
 		auto browser = scene->createChild<mainframe::cef_::WebBrowser>();
-		browser->setSize(window.getSize());
-		browser->loadUrl("https://google.com");
+		browser->setSize(window.getSize() / 2);
+		//browser->loadUrl("https://google.com");
+		browser->loadUrl("file:///content/rawrui/server_browser/__compiled__.html");
+
+		browser = scene->createChild<mainframe::cef_::WebBrowser>();
+		browser->setSize(window.getSize() / 2);
+		browser->setPos(window.getSize() / 2);
+		browser->loadUrl("file:///content/rawrui/server_browser/__compiled__.html");
+
 	}
 
 	virtual void draw() override {
@@ -55,22 +62,23 @@ public:
 
 int main(int argc, char* argv[]) {
 	auto& cef = mainframe::cef_::CefEngine::instance();
-	if (cef.init() != 0) {
-		fmt::print("Failed to init CEF\n");
-		return -1;
+	if (!cef.init()) return 1; // exit second process CEF creates
+
+	{
+		Window w;
+		if (!w.create(1024, 1024, "mainframe.cef.catboard")) {
+			fmt::print("Failed to create window\n");
+			return -1;
+		}
+
+		GameTest e(w);
+		e.setFPS(75);
+
+		e.init();
+		e.run();
 	}
 
-	Window w;
-	if (!w.create(1024, 1024, "mainframe.cef.catboard")) {
-		fmt::print("Failed to create window\n");
-		return -1;
-	}
-
-	GameTest e(w);
-	e.setFPS(75);
-
-	e.init();
-	e.run();
+	cef.shutdown();
 
 	return 0;
 }

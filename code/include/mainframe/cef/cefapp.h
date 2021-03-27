@@ -16,6 +16,7 @@ namespace mainframe {
 			CefRefPtr<CefProcessHandler> processHandler;
 
 			CefApp(CefEngine& cef_);
+			~CefApp();
 
 			void shutdown();
 			void update();

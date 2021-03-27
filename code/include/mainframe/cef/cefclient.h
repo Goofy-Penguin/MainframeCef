@@ -19,15 +19,13 @@ namespace mainframe {
 			public CefContextMenuHandler {
 
 			CefRefPtr<CefRenderer> renderer;
-			std::map<int, CefRefPtr<::CefBrowser>> browsers;
+			std::map<int, std::pair<CefRefPtr<::CefBrowser>, WebBrowser*>> browsers;
 
 			// Handles the browser side of query routing.
 			CefRefPtr<CefMessageRouterBrowserSide> messageRouter;
 			CefRefPtr<CefDragData> globalDragData;
 
 			CefMessageHandler messageHandler;
-
-			WebBrowser* m_focused = nullptr;
 
 		public:
 			~CefClient();
@@ -40,11 +38,12 @@ namespace mainframe {
 
 			// EVENTS
 			mainframe::utils::Event<CefRefPtr<CefProcessMessage>> onProcessMessage;
+			mainframe::utils::EventNamed<const nlohmann::json&, CefRefPtr<CefMessageRouterBrowserSide::Callback>> onEvent;
 			mainframe::utils::Event<> onLoadingStart;
 			mainframe::utils::Event<const std::string&, int> onLoadingEnd;
-			mainframe::utils::Event<CefMessageHandler::CallbackFunc> onUIQuery;
 
-			CefRefPtr<::CefBrowser> createBrowser(const std::string& url);
+			std::pair<CefRefPtr<::CefBrowser>, WebBrowser*>& createBrowser(const std::string& url);
+			std::pair<CefRefPtr<::CefBrowser>, WebBrowser*>& getBrowser(int identifier);
 			void destroyBrowser(int id);
 
 			void goBackOrForward(int browserId, bool goBack);
