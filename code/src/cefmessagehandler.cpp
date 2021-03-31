@@ -42,7 +42,7 @@ namespace mainframe {
 				// try global
 				listener = client->onEvent.find(eventName);
 
-				if (listener == ourBrowser->onEvent.end()) {
+				if (listener == client->onEvent.end()) {
 					fmt::print("event '{}' not found", eventName);
 					if (callback) callback->Failure(404, "Event not found");
 					return true;
