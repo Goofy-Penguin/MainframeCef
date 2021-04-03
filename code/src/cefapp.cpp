@@ -32,12 +32,9 @@ namespace mainframe {
 		void CefApp::OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) {
 			if (!process_type.empty()) return;
 
-			// Speed up cef! (Based on https://github.com/cefsharp/CefSharp/blob/master/CefSharp.Core/AbstractCefSettings.h)
+			// Speed up CEF! (Based on https://github.com/cefsharp/CefSharp/blob/3f5dc4248ae10cff500d37e120048101faea4646/CefSharp.Core.Runtime/CefSettingsBase.h)
 			// (you'll loose WebGL support but gain increased FPS and reduced CPU usage).
-			command_line->AppendSwitchWithValue("process-per-site-instance", "1");
-			command_line->AppendSwitchWithValue("disable-gpu", "1");
-			command_line->AppendSwitchWithValue("disable-gpu-compositing", "1");
-			command_line->AppendSwitchWithValue("enable-begin-frame-scheduling", "1");
+            command_line->AppendSwitchWithValue("disable-features", "CalculateNativeWinOcclusion,WinUseBrowserSpellChecker");
 
 			command_line->AppendSwitch("no-proxy-server");
 			command_line->AppendSwitch("disable-pdf-extension");

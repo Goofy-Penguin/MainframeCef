@@ -13,7 +13,7 @@ namespace mainframe {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			buffer = {1};
+			buffer = {0};
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer.data());
 		}
 
@@ -23,7 +23,11 @@ namespace mainframe {
 
 		bool CefRenderFrame::hitTest(const mainframe::math::Vector2i& location) {
 			auto index = location.y * size.x + location.x;
-			return (index >= 0 && index < buffer.size()) && buffer[index] != 0;
+			if (index < 0 || index >= buffer.size()) return false;
+
+			auto col = buffer[index];
+			auto ret = col & 0xFF000000;
+			return ret != 0;
 		}
 
 		void CefRenderFrame::setSize(const mainframe::math::Vector2i& viewSize) {

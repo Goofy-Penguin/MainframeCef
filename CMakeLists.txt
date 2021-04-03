@@ -38,7 +38,7 @@ hunter_add_package(nlohmann_json)
 find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-set(CEF_VERSION 87.1.11+g8bb7705+chromium-87.0.4280.66)
+set(CEF_VERSION 89.0.17+ge7bbb1d+chromium-89.0.4389.114)
 include("cmake/cef.cmake")
 FetchContent_Declare(cefdll_wrapper GIT_REPOSITORY https://github.com/edunad/cef-cmake.git)
 FetchContent_MakeAvailable(cefdll_wrapper)

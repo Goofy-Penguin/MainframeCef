@@ -1,5 +1,6 @@
 #include <mainframe/cef/cef.h>
 #include <mainframe/cef/cefclient.h>
+#include <mainframe/cef/cefuischemefactory.h>
 
 #include <include/cef_base.h>
 #include <include/cef_app.h>
@@ -54,6 +55,9 @@ namespace mainframe {
 				return false;
 			}
 
+			// Yes, this is awful, but it seems to be the only way to load .js files /shrug
+			CefRegisterSchemeHandlerFactory("http", "mods", new CefUISchemeFactory());
+
 			inited = true;
 			return true;
 		}
@@ -74,7 +78,7 @@ namespace mainframe {
 			app->shutdown();
 			app = nullptr;
 
-			// ¯\_(-_-)_/¯
+			// ï¿½\_(-_-)_/ï¿½
 			for (int i = 0; i < 3; i++) CefDoMessageLoopWork();
 			CefShutdown();
 		}

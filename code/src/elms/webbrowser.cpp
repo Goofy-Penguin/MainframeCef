@@ -33,8 +33,21 @@ namespace mainframe {
 
 		}
 
+		void WebBrowser::injectJS(const std::string& js) {
+    		CefRefPtr<CefFrame> frame = browser->GetMainFrame();
+			frame->ExecuteJavaScript(js, frame->GetURL(), 0);
+		}
+
+		void WebBrowser::setDragArea(const math::AABBi& aabb) {
+			dragRect = aabb;
+		}
+
 		void WebBrowser::draw(render::Stencil& stencil) {
 			stencil.drawTexture({0, 0}, getSize(), frame->getGLHandle());
+
+			
+			/*auto client = CefEngine::instance().getApp()->getClient();
+			stencil.drawTexture({0, 0}, getSize(), client->getRenderer()->dragTexture->getGLHandle());*/
 
 			// TODO: draw dragging texture
 		}
@@ -72,9 +85,9 @@ namespace mainframe {
 			evt.y = mousePos.y;
 			evt.modifiers = Helper::mouseGlfwToCefEvent(cefbtn);
 
-			if (this->dragRect.surfaceArea() > 0 && !isDragging) {
+			if (dragRect.surfaceArea() > 0 && !isDragging) {
 				if (dragRect.contains(mousePos)) {
-					dragPos = mousePos;
+					dragStartPos = mousePos;
 					isDragging = true;
 				}
 			}
@@ -91,10 +104,7 @@ namespace mainframe {
 			evt.y = mousePos.y;
 			evt.modifiers = Helper::mouseGlfwToCefEvent(cefbtn);
 
-			if (dragRect.surfaceArea() > 0) {
-				isDragging = false;
-			}
-
+			isDragging = false;
 			browser->GetHost()->SendMouseClickEvent(evt, cefbtn, true, 1);
 
 			auto client = CefEngine::instance().getApp()->getClient();
@@ -105,36 +115,56 @@ namespace mainframe {
 			}
 		}
 
-		void WebBrowser::mouseScroll(const math::Vector2i& mousePos, const math::Vector2i& offset) {
-			// TODO: not working yet
 
-			CefMouseEvent evt;
-			evt.x = offset.x * 25;
-			evt.y = offset.y * 25;
-			evt.modifiers = EVENTFLAG_LEFT_MOUSE_BUTTON;
+		void WebBrowser::mouseEnter() {
+			auto client = CefEngine::instance().getApp()->getClient();
+			if (client->getGlobalDragData() == nullptr) return;
 
-			browser->GetHost()->SendMouseWheelEvent(evt, offset.x, offset.y);
-		}
-
-		void WebBrowser::setHovering(bool hovering) {
 			CefMouseEvent evt;
 			evt.x = lastMousePos.x;
 			evt.y = lastMousePos.y;
 			evt.modifiers = EVENTFLAG_LEFT_MOUSE_BUTTON;
 
-			browser->GetHost()->SendMouseMoveEvent(evt, !hovering);
+			this->browser->GetHost()->DragTargetDragEnter(client->getGlobalDragData(), evt, DRAG_OPERATION_EVERY);
+		}
+
+		void WebBrowser::mouseLeave() {
+			auto client = CefEngine::instance().getApp()->getClient();
+			if (client->getGlobalDragData() == nullptr) return;
+
+			this->browser->GetHost()->DragTargetDragLeave();
+		}
+
+		void WebBrowser::mouseScroll(const math::Vector2i& mousePos, const math::Vector2i& offset) {
+			if(!this->getHovering()) return;
+
+			CefMouseEvent evt;
+			evt.x = mousePos.x;
+			evt.y = mousePos.y;
+
+			browser->GetHost()->SendMouseWheelEvent(evt, offset.x * 2, offset.y * 2);
+		}
+
+		void WebBrowser::setHovering(bool hovering) {
+			mainframe::ui::Element::setHovering(hovering);
+			hovering ? mouseEnter() : mouseLeave();
 		}
 
 		void WebBrowser::mouseMove(const math::Vector2i& mousePos) {
+			if (isDragging) onBrowserDrag(mousePos + getPos());
+
 			CefMouseEvent evt;
 			evt.x = mousePos.x;
 			evt.y = mousePos.y;
 			evt.modifiers = EVENTFLAG_LEFT_MOUSE_BUTTON;
 
 			lastMousePos = mousePos;
-
 			browser->GetHost()->DragTargetDragOver(evt, DRAG_OPERATION_EVERY);
-			browser->GetHost()->SendMouseMoveEvent(evt, false);
+			browser->GetHost()->SendMouseMoveEvent(evt, !this->getHovering());
+		}
+
+		void WebBrowser::onBrowserDrag(const math::Vector2i& mousePos) {
+			this->setPos({mousePos.x - dragStartPos.x, mousePos.y - dragStartPos.y});
 		}
 
 		void WebBrowser::keyDown(unsigned int key, unsigned int scancode, mainframe::ui::ModifierKey mods, bool repeating) {
