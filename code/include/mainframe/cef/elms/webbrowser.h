@@ -22,18 +22,26 @@ namespace mainframe {
 			CefRefPtr<::CefBrowserHost> host;
 
 			bool isDragging = false;
-			mainframe::math::Vector2i dragPos;
-			mainframe::math::AABBi dragRect;
+			mainframe::math::Vector2i dragStartPos;
 			mainframe::math::Vector2i lastMousePos;
+			mainframe::math::AABBi dragRect;
 
 		public:
 			mainframe::utils::EventNamed<const nlohmann::json&, CefRefPtr<CefMessageRouterBrowserSide::Callback>> onEvent;
+			mainframe::utils::EventNamed<> onLoaded;
 
 			WebBrowser();
 			~WebBrowser();
+
 			void loadUrl(const std::string& url);
+			void injectJS(const std::string& js);
 
 			void openDevTools();
+			void setDragArea(const math::AABBi& aabb);
+			void onBrowserDrag(const math::Vector2i& mousePos);
+
+		 	void mouseEnter();
+			void mouseLeave();
 
 			virtual void setSize(const math::Vector2i& size) override;
 			virtual void update() override;

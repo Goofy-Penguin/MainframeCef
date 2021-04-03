@@ -17,6 +17,10 @@ namespace mainframe {
 		}
 
 		void CefProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) {
+  			CefRefPtr<CefV8Value> object = context->GetGlobal();
+			// Inject the game location on the browser, so we can easily access it
+			object->SetValue("gameLocation",  CefV8Value::CreateString(std::filesystem::current_path().string()), V8_PROPERTY_ATTRIBUTE_NONE);
+
 			this->messageRouter->OnContextCreated(browser, frame, context);
 		}
 

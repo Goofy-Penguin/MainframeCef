@@ -13,10 +13,6 @@
 namespace mainframe {
 	namespace cef_ {
 		CefClient::CefClient() {
-			//messageHandler.onUIQuery += [this](int browserId, nlohmann::json& jsonData, CefRefPtr<CefMessageRouterBrowserSide::Callback> callback) {
-			//	onUIQuery(browserId, jsonData, callback);
-			//};
-
 			renderer = new CefRenderer();
 		}
 
@@ -51,7 +47,7 @@ namespace mainframe {
 			window_info.windowless_rendering_enabled = 1;
 
 			CefBrowserSettings browserSettings;
-			browserSettings.windowless_frame_rate = 30;
+			browserSettings.windowless_frame_rate = 60;
 
 			CefRefPtr<::CefBrowser> browser = CefBrowserHost::CreateBrowserSync(window_info, this, url, browserSettings, nullptr, nullptr);
 			if (browser == nullptr) throw std::runtime_error("error while creating CEF browser object");
@@ -110,21 +106,21 @@ namespace mainframe {
 		void CefClient::OnDraggableRegionsChanged(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefFrame> frame, const std::vector<CefDraggableRegion>& regions) {
 			CEF_REQUIRE_UI_THREAD();
 
-			/*
-			auto& webb = browsers[browser->GetIdentifier()];
-			if (webb == nullptr) return;
 			if (regions.size() <= 0) return;
+
+			auto& webb = browsers[browser->GetIdentifier()].second;
+			if (webb == nullptr) return;
 
 			// TODO: Merge rectangles or store the current
 			for (auto& p : regions) {
 				if (!p.draggable) continue;
-				webb->dragArea = new TomatoLib::Rectangle(
-					static_cast<float>(p.bounds.x),
-					static_cast<float>(p.bounds.y),
-					static_cast<float>(p.bounds.width),
-					static_cast<float>(p.bounds.height));
+				
+				webb->setDragArea({
+					p.bounds.x,
+					p.bounds.y,
+					p.bounds.width,
+					p.bounds.height});
 			}
-			*/
 		}
 
 		bool CefClient::OnDragEnter(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefDragData> dragData, DragOperationsMask mask) {
@@ -154,6 +150,10 @@ namespace mainframe {
 			if (!frame->IsMain()) return;
 
 			onLoadingEnd(frame->GetURL(), httpStatusCode);
+
+			auto& webb = browsers[browser->GetIdentifier()].second;
+			if (webb == nullptr) return;
+			webb->onLoaded();
 		}
 
 		void CefClient::OnAfterCreated(CefRefPtr<::CefBrowser> browser) {
