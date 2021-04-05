@@ -5,7 +5,7 @@
 
 namespace mainframe {
 	namespace cef_ {
-		static class Helper {
+		class Helper {
 		public:
 			static uint32_t mouseGlfwToCefEvent(CefBrowserHost::MouseButtonType btn);
 			static int convertGlfwKeyToCef(int key);

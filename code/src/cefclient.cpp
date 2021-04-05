@@ -8,7 +8,7 @@
 
 #include <filesystem>
 #include <memory>
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 namespace mainframe {
 	namespace cef_ {
@@ -108,13 +108,13 @@ namespace mainframe {
 
 			if (regions.size() <= 0) return;
 
-			auto& webb = browsers[browser->GetIdentifier()].second;
+			auto webb = browsers[browser->GetIdentifier()].second;
 			if (webb == nullptr) return;
 
 			// TODO: Merge rectangles or store the current
 			for (auto& p : regions) {
 				if (!p.draggable) continue;
-				
+
 				webb->setDragArea({
 					p.bounds.x,
 					p.bounds.y,
