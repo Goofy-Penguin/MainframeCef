@@ -71,7 +71,6 @@ namespace mainframe::cef_ {
 	}
 
 	void CefMessageHandler::OnQueryCanceled(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int64 query_id) {
-		const std::pair<CefRefPtr<CefMessageRouterBrowserSide::Callback>, int64>* chosenOne = nullptr;
 		std::string name;
 		for (auto& pair : persistentEvents) {
 			if (pair.second.second != query_id) continue;
