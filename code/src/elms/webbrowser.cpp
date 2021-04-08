@@ -45,11 +45,16 @@ namespace mainframe {
 		void WebBrowser::draw(render::Stencil& stencil) {
 			stencil.drawTexture({0, 0}, getSize(), frame->getGLHandle());
 
-			
+
 			/*auto client = CefEngine::instance().getApp()->getClient();
 			stencil.drawTexture({0, 0}, getSize(), client->getRenderer()->dragTexture->getGLHandle());*/
 
 			// TODO: draw dragging texture
+		}
+
+		void WebBrowser::queryUI(const std::string& queryId, const CefString& data) {
+			auto client = CefEngine::instance().getApp()->getClient();
+			client->queryUI(browser->GetIdentifier(), queryId, data);
 		}
 
 		void WebBrowser::loadUrl(const std::string& url) {
@@ -114,7 +119,6 @@ namespace mainframe {
 				this->browser->GetHost()->DragSourceSystemDragEnded();
 			}
 		}
-
 
 		void WebBrowser::mouseEnter() {
 			auto client = CefEngine::instance().getApp()->getClient();

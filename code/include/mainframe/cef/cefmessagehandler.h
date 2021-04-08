@@ -8,6 +8,8 @@
 namespace mainframe {
 	namespace cef_ {
 		class CefMessageHandler : public CefMessageRouterBrowserSide::Handler {
+			std::map<std::string, std::pair<CefRefPtr<CefMessageRouterBrowserSide::Callback>, int64>> persistentEvents;
+
 		public:
 			CefMessageHandler() = default;
 			~CefMessageHandler() = default;
@@ -16,6 +18,7 @@ namespace mainframe {
 
 			// Overrides
 			virtual bool OnQuery(CefRefPtr<::CefBrowser> browser, CefRefPtr<CefFrame> frame,int64 query_id, const CefString& request, bool persistent,CefRefPtr<Callback> callback) override;
+			virtual void OnQueryCanceled(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int64 query_id) override;
 
 			DISALLOW_COPY_AND_ASSIGN(CefMessageHandler);
 		};

@@ -48,6 +48,7 @@ namespace mainframe {
 
 			void goBackOrForward(int browserId, bool goBack);
 			void browserVisibility(int browserId, bool hidden);
+			bool queryUI(int browserId, const std::string& queryId, const CefString& data);
 
 			CefBrowserHost::MouseButtonType glMouseToCef(int mousebtn);
 

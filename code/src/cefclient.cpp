@@ -170,6 +170,14 @@ namespace mainframe {
 			messageRouter->AddHandler(&messageHandler, false);
 		}
 
+		bool CefClient::queryUI(int browserId, const std::string& queryId, const CefString& data) {
+			auto callback = messageHandler.queryUI(browserId, queryId);
+			if (callback == nullptr) return false;
+
+			callback->Success(data);
+			return true;
+		}
+
 		void CefClient::OnBeforeClose(CefRefPtr<::CefBrowser> browser) {
 			CEF_REQUIRE_UI_THREAD();
 		}
