@@ -39,6 +39,7 @@ namespace mainframe {
 			void openDevTools();
 			void setDragArea(const math::AABBi& aabb);
 			void onBrowserDrag(const math::Vector2i& mousePos);
+			void queryUI(const std::string& queryId, const CefString& data);
 
 		 	void mouseEnter();
 			void mouseLeave();
