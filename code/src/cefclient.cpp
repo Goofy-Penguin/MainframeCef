@@ -152,8 +152,7 @@ namespace mainframe {
 			onLoadingEnd(frame->GetURL(), httpStatusCode);
 
 			auto& webb = browsers[browser->GetIdentifier()].second;
-			if (webb == nullptr) return;
-			webb->onLoaded();
+			if (webb != nullptr) webb->onLoaded();
 		}
 
 		void CefClient::OnAfterCreated(CefRefPtr<::CefBrowser> browser) {
