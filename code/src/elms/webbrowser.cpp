@@ -3,6 +3,7 @@
 #include <mainframe/cef/elms/webbrowser.h>
 #include <GLFW/glfw3.h>
 
+#include <fmt/format.h>
 namespace mainframe {
 	namespace cef_ {
 		WebBrowser::WebBrowser() {
@@ -31,6 +32,51 @@ namespace mainframe {
 
 		void WebBrowser::update() {
 
+		}
+
+		void WebBrowser::injectCSS(const std::string& cssUrl, bool async) {
+    		CefRefPtr<CefFrame> frame = browser->GetMainFrame();
+			auto script = fmt::format(R"(
+				(function(){{
+					let scr = document.createElement('link');
+					scr.href='http://ias/content/ui/{1}';
+					scr.rel='stylesheet';
+
+					if({0}) {{
+						src.media = 'print';
+						scr.onload = () => {{ src.media = 'all'; }}
+					}}
+
+					document.head.appendChild(scr);
+				}})();
+			)", async, cssUrl);
+
+			frame->ExecuteJavaScript(script, frame->GetURL(), 0);
+		}
+
+		void WebBrowser::injectJSScript(const std::string& jsUrl, bool async, bool announce) {
+    		CefRefPtr<CefFrame> frame = browser->GetMainFrame();
+			auto script = fmt::format(R"(
+				(function(){{
+					let scr = document.createElement('script');
+					if({0}) scr.setAttribute('async', 'async');
+
+					scr.src='http://ias/content/ui/{2}';
+					scr.type='module';
+
+					if({1}) {{
+						scr.onload = () => {{
+							if(window.scriptLoaded) window.scriptLoaded('{2}');
+						}};
+					}}
+
+					const scripts = document.body.getElementsByTagName("script");
+					if(!scripts || scripts.length <= 0) document.body.appendChild(scr);
+					else document.body.insertBefore(scr, scripts[0]);
+				}})();
+			)", async, announce, jsUrl);
+
+			frame->ExecuteJavaScript(script, frame->GetURL(), 0);
 		}
 
 		void WebBrowser::injectJS(const std::string& js) {

@@ -34,6 +34,10 @@ namespace mainframe {
 			~WebBrowser();
 
 			void loadUrl(const std::string& url);
+
+			void injectCSS(const std::string& cssUrl, bool async = false);
+			void injectJSScript(const std::string& jsUrl, bool async = false, bool announce = false);
+
 			void injectJS(const std::string& js);
 
 			void openDevTools();

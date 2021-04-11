@@ -56,7 +56,7 @@ namespace mainframe {
 			}
 
 			// Yes, this is awful, but it seems to be the only way to load .js files /shrug
-			CefRegisterSchemeHandlerFactory("http", "mods", new CefUISchemeFactory());
+			CefRegisterSchemeHandlerFactory("http", "ias", new CefUISchemeFactory());
 
 			inited = true;
 			return true;

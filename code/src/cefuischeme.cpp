@@ -14,22 +14,22 @@ namespace mainframe
             handle_request = true;
 
             std::string url = request->GetURL();
-            
+
             auto extPos = url.find_last_of('.');
-            if (extPos == std::string::npos) { 
+            if (extPos == std::string::npos) {
                 callback->Cancel();
                 return false;
             }
 
             std::string ext = url.substr(extPos + 1);
             mime_type_ = CefGetMimeType(ext);
-            if(mime_type_.empty()){ 
+            if(mime_type_.empty()){
                 mime_type_ = "application/x-binary";
             }
 
             std::string path = std::filesystem::current_path().string();
-            url.erase(0, 5); // Remove the protocol
-            
+            url.erase(0, 10); // Remove the http/ias protocol
+
             if (!buffer.writeFromFile(path + url)) {
                 callback->Cancel();
                 return false;
