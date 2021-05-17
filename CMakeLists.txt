@@ -51,6 +51,7 @@ endif()
 file(GLOB_RECURSE source_files
 	"code/src/*.cpp"
 	"code/src/*.c"
+	"code/include/*.h"
 	"code/include/*.hpp"
 )
 
